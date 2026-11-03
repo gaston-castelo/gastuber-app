@@ -26,7 +26,9 @@ jobs:
           channel: 'stable'
 
       - name: Get dependencies
-        run: flutter pub get
+        run: |
+          flutter clean
+          flutter pub get
 
       - name: Make Gradle wrapper executable
         run: chmod +x android/gradlew
