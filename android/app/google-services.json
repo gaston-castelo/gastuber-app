@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "243063184163",
+    "project_id": "gastuber-e8f8c",
+    "storage_bucket": "gastuber-e8f8c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:243063184163:android:gastuber-e8f8c",
+        "android_client_info": {
+          "package_name": "com.example.gastuber"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-_nHxNk4gmXB92kXMqP9xbMYC4-BVT2M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
