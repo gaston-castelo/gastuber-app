@@ -22,6 +22,9 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   final FirestoreService _firestoreService = FirestoreService();
   bool _isOnline = true;
   StreamSubscription<RideModel?>? _activeRideSub;
+  // Streams creados una sola vez (no en cada build) para que la lista no se reinicie.
+  late final Stream<List<RideModel>> _pendingCountStream = _firestoreService.streamPendingRides();
+  late final Stream<List<RideModel>> _pendingListStream = _firestoreService.streamPendingRides();
 
   @override
   void initState() {
@@ -246,7 +249,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     ),
                   ),
                   StreamBuilder<List<RideModel>>(
-                    stream: _firestoreService.streamPendingRides(),
+                    stream: _pendingCountStream,
                     builder: (context, snapshot) {
                       final count = snapshot.data?.length ?? 0;
                       return Container(
@@ -296,7 +299,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                       ),
                     )
                   : StreamBuilder<List<RideModel>>(
-                      stream: _firestoreService.streamPendingRides(),
+                      stream: _pendingListStream,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Center(child: CircularProgressIndicator());

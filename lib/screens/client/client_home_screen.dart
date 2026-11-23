@@ -35,16 +35,33 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
 
   StreamSubscription<RideModel?>? _activeRideSub;
 
+  // Conductores disponibles: UNA sola suscripción a Firestore (antes se creaba un stream
+  // nuevo en cada build y eso redibujaba el mapa en bucle, haciendo titilar los marcadores).
+  StreamSubscription<List<UserModel>>? _driversSub;
+  List<UserModel> _drivers = [];
+  bool _driversLoaded = false;
+
   @override
   void initState() {
     super.initState();
     _fetchUserLocation();
     _listenToActiveRide();
+    _listenToDrivers();
+  }
+
+  void _listenToDrivers() {
+    _driversSub = _firestoreService.streamAvailableDrivers().listen((drivers) {
+      if (!mounted) return;
+      _drivers = drivers;
+      _driversLoaded = true;
+      _updateDriverMarkers(drivers);
+    });
   }
 
   @override
   void dispose() {
     _activeRideSub?.cancel();
+    _driversSub?.cancel();
     super.dispose();
   }
 
@@ -357,29 +374,22 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        StreamBuilder<List<UserModel>>(
-                          stream: _firestoreService.streamAvailableDrivers(),
-                          builder: (context, snapshot) {
-                            final count = snapshot.data?.length ?? 0;
-                            return Text(
-                              '$count disponibles',
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.accentDark,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            );
-                          },
+                        Text(
+                          '${_drivers.length} disponibles',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.accentDark,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
 
                     // Stream de conductores disponibles desde Firestore
-                    StreamBuilder<List<UserModel>>(
-                      stream: _firestoreService.streamAvailableDrivers(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                    Builder(
+                      builder: (context) {
+                        if (!_driversLoaded) {
                           return const Center(
                             child: Padding(
                               padding: EdgeInsets.all(20),
@@ -388,12 +398,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                           );
                         }
 
-                        final drivers = snapshot.data ?? [];
-
-                        // Actualizar marcadores en el mapa
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          _updateDriverMarkers(drivers);
-                        });
+                        final drivers = _drivers;
 
                         if (drivers.isEmpty) {
                           return Container(
